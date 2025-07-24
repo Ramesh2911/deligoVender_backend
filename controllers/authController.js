@@ -74,3 +74,22 @@ export const logout = async (req, res) => {
     });
   }
 };
+
+//======country list ======
+export const getCountries = async (req, res) => {
+  try {
+    const [rows] = await con.query('SELECT * FROM hr_countries WHERE is_active = 1');
+
+    return res.status(200).json({
+      status: true,
+      message: 'Active countries fetched successfully',
+      data: rows,
+    });
+  } catch (error) {
+    console.error('Get Active Countries Error:', error.message);
+    return res.status(500).json({
+      status: false,
+      message: 'Server error while fetching active countries',
+    });
+  }
+};
