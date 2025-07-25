@@ -83,3 +83,51 @@ export const verifyOTP = async (req, res) => {
       });
    }
 };
+
+//===== resend OTP====
+export const resendOTP = async (req, res) => {
+   const { phone, countryid, areacode } = req.body;
+
+   if (!phone || !countryid || !areacode) {
+      return res.status(400).json({
+         status: false,
+         message: 'Phone number, country ID, and area code are required',
+      });
+   }
+
+   try {
+      const [rows] = await con.query(
+         `SELECT * FROM hr_otp WHERE country_id = ? AND mobile = ?`,
+         [countryid, phone]
+      );
+
+      if (rows.length === 0) {
+         return res.status(404).json({
+            status: false,
+            message: 'No OTP record found to resend',
+         });
+      }
+      const otp = Math.floor(1000 + Math.random() * 9000);
+      const fullPhone = `+${areacode}${phone}`;
+
+      await con.query(`UPDATE hr_otp SET otp = ? WHERE id = ?`, [otp, rows[0].id]);
+
+      const message = await client.messages.create({
+         body: `Your Deligo OTP Resend Verification code is ${otp}`,
+         from: process.env.TWILIO_PHONE_NUMBER,
+         to: fullPhone,
+      });
+
+      return res.status(200).json({
+         status: true,
+         message: 'OTP resent successfully',
+      });
+
+   } catch (error) {
+      console.error('Resend OTP Error:', error);
+      return res.status(500).json({
+         status: false,
+         message: 'Failed to resend OTP',
+      });
+   }
+};
