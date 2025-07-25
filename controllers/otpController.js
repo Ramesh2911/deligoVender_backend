@@ -17,10 +17,22 @@ export const sendOTP = async (req, res) => {
       });
    }
 
-    const otp = Math.floor(1000 + Math.random() * 9000);
-   const fullPhone = `+${areacode}${phone}`;
-
    try {
+      const [userRows] = await con.query(
+         `SELECT * FROM hr_users WHERE mobile = ? AND country_id = ?`,
+         [phone, countryid]
+      );
+
+      if (userRows.length > 0) {
+         return res.status(200).json({
+            status: false,
+            message:"Phone number already exists in the system. Please use a different phone number or proceed to login.",
+         });
+      }
+
+      const otp = Math.floor(1000 + Math.random() * 9000);
+      const fullPhone = `+${areacode}${phone}`;
+
       const message = await client.messages.create({
          body: `Your Deligo OTP Service Verification code ${otp}`,
          from: process.env.TWILIO_PHONE_NUMBER,
@@ -28,7 +40,7 @@ export const sendOTP = async (req, res) => {
       });
 
       await con.query(
-         `INSERT INTO hr_otp (user_id,country_id, mobile, otp) VALUES (0,?, ?, ?)`,
+         `INSERT INTO hr_otp (user_id, country_id, mobile, otp) VALUES (0, ?, ?, ?)`,
          [countryid, phone, otp]
       );
 
@@ -36,8 +48,9 @@ export const sendOTP = async (req, res) => {
          status: true,
          message: 'OTP sent successfully',
       });
+
    } catch (error) {
-      console.error('Twilio or DB Error:', error);
+      console.error(' DB Error:', error);
       return res.status(500).json({
          status: false,
          message: 'Failed to send and store OTP',
