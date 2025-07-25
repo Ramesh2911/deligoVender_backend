@@ -17,12 +17,12 @@ export const sendOTP = async (req, res) => {
       });
    }
 
-   const otp = Math.floor(100000 + Math.random() * 900000);
+    const otp = Math.floor(1000 + Math.random() * 9000);
    const fullPhone = `+${areacode}${phone}`;
 
    try {
       const message = await client.messages.create({
-         body: `Your OTP code is ${otp}`,
+         body: `Your Deligo OTP Service Verification code ${otp}`,
          from: process.env.TWILIO_PHONE_NUMBER,
          to: fullPhone,
       });
