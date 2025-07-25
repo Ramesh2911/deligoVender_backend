@@ -3,6 +3,7 @@ import cookieParser from 'cookie-parser';
 import { config } from 'dotenv';
 import cors from 'cors';
 import authRoute from './routes/authRoutes.js';
+import otpRoutes from './routes/otpRoutes.js';
 
 config({
     path: './config.env'
@@ -20,4 +21,5 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', authRoute);
+app.use('/api', otpRoutes);
 export default app;
