@@ -26,7 +26,7 @@ export const sendOTP = async (req, res) => {
       if (userRows.length > 0) {
          return res.status(200).json({
             status: false,
-            message:"Phone number already exists in the system. Please use a different phone number or proceed to login.",
+            message: "Phone number already exists in the system. Please use a different phone number or proceed to login.",
          });
       }
 
