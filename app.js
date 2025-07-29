@@ -4,6 +4,9 @@ import { config } from 'dotenv';
 import cors from 'cors';
 import authRoute from './routes/authRoutes.js';
 import otpRoutes from './routes/otpRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import unitRoutes from './routes/unitRoutes.js';
 
 config({
     path: './config.env'
@@ -22,4 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/api', authRoute);
 app.use('/api', otpRoutes);
+app.use('/api', categoryRoutes);
+app.use('/api', productRoutes);
+app.use('/api', unitRoutes);
+
 export default app;
