@@ -2,7 +2,7 @@ import express from 'express';
 import {
    sendOTP,
    verifyOTP,
-    resendOTP,
+   resendOTP,
 }
    from '../controllers/otpController.js';
 
