@@ -76,6 +76,83 @@ export const addProduct = async (req, res) => {
    }
 };
 
+//====updateProduct=====
+export const updateProduct = async (req, res) => {
+   const {
+      product_cat,
+      product_sub_cat,
+      vendor_id,
+      product_name,
+      product_image,
+      product_short,
+      product_desc,
+      mrp_price,
+      price,
+      sku,
+      brand,
+      stock_quantity,
+      product_unit_id,
+      is_active,
+   } = req.body;
+
+   const { pid } = req.params;
+
+   if (!pid) {
+      return res.status(400).json({ success: false, message: 'Product ID (pid) is required' });
+   }
+
+   try {
+      const sql = `
+      UPDATE hr_product SET
+        product_cat = ?,
+        product_sub_cat = ?,
+        vendor_id = ?,
+        product_name = ?,
+        product_image = ?,
+        product_short = ?,
+        product_desc = ?,
+        mrp_price = ?,
+        price = ?,
+        sku = ?,
+        brand = ?,
+        stock_quantity = ?,
+        product_unit_id = ?,
+        is_active = ?,
+        modified_time = NOW()
+      WHERE pid = ?
+    `;
+
+      const values = [
+         product_cat,
+         product_sub_cat,
+         vendor_id,
+         product_name,
+         product_image,
+         product_short,
+         product_desc,
+         mrp_price,
+         price,
+         sku,
+         brand,
+         stock_quantity,
+         product_unit_id,
+         is_active,
+         pid,
+      ];
+
+      const [result] = await con.query(sql, values);
+
+      if (result.affectedRows === 0) {
+         return res.status(404).json({ success: false, message: 'Product not found' });
+      }
+
+      return res.status(200).json({ success: true, message: 'Product updated successfully' });
+   } catch (error) {
+      console.error('Update Product Error:', error);
+      return res.status(500).json({ success: false, message: 'Internal server error' });
+   }
+};
+
 //=====vendor against product====
 export const getProductsByVendor = async (req, res) => {
    let { vendor_id } = req.query;
