@@ -28,6 +28,8 @@ export const adminCookie = (jwt_secret, user, res, message) => {
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
+                id: user.id,
+                business_type_id: user.business_type_id,
                 token: token,
                 token_expires_at: expiresAt.toISOString()
             }
