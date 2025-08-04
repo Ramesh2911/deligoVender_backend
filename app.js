@@ -7,6 +7,7 @@ import otpRoutes from './routes/otpRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import unitRoutes from './routes/unitRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 
 config({
     path: './config.env'
@@ -28,5 +29,6 @@ app.use('/api', otpRoutes);
 app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', unitRoutes);
+app.use('/api', dashboardRoutes);
 
 export default app;
