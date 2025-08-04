@@ -144,3 +144,45 @@ export const resendOTP = async (req, res) => {
       });
    }
 };
+
+//====== delete OTP=====
+export const deleteOTP = async (req, res) => {
+   const { phone, countryid } = req.body;
+
+   if (!phone || !countryid) {
+      return res.status(400).json({
+         status: false,
+         message: 'Phone number and country ID are required',
+      });
+   }
+
+   try {
+      const [rows] = await con.query(
+         `SELECT * FROM hr_otp WHERE country_id = ? AND mobile = ?`,
+         [countryid, phone]
+      );
+
+      if (rows.length === 0) {
+         return res.status(404).json({
+            status: false,
+            message: 'No OTP record found to delete',
+         });
+      }
+
+      await con.query(
+         `DELETE FROM hr_otp WHERE country_id = ? AND mobile = ?`,
+         [countryid, phone]
+      );
+
+      return res.status(200).json({
+         status: true,
+         message: 'OTP deleted successfully',
+      });
+   } catch (error) {
+      console.error('Delete OTP Error:', error);
+      return res.status(500).json({
+         status: false,
+         message: 'Failed to delete OTP',
+      });
+   }
+};
