@@ -31,6 +31,7 @@ export const adminCookie = (jwt_secret, user, res, message) => {
                 mobile: user.mobile,
                 id: user.id,
                 business_type_id: user.business_type_id,
+                is_shop_open: user.is_shop_open,
                 token: token,
                 token_expires_at: expiresAt.toISOString()
             }
