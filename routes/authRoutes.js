@@ -4,10 +4,13 @@ import {
    logout,
    getCountries,
    createAcount,
-   updateUserAccount
+   updateUserAccount,
+   sendResetOtp,
+   resendResetOtp,
+   verifyResetOtp,
+   resetPassword
 }
    from '../controllers/authController.js';
-import { adminAuth } from '../middleware/auth.js';
 import multer from 'multer';
 
 const authRoutes = express.Router();
@@ -18,6 +21,10 @@ authRoutes.post('/createuseraccount', upload.none(), createAcount);
 authRoutes.put('/useraccountupdate', upload.none(), updateUserAccount);
 authRoutes.post('/login', login);
 authRoutes.post('/logout', logout);
+authRoutes.post('/reset-password-otp', sendResetOtp);
+authRoutes.post('/resend-reset-otp', resendResetOtp);
+authRoutes.post('/verify-reset-otp', verifyResetOtp);
+authRoutes.post('/reset-password', resetPassword);
 authRoutes.get('/country-list', getCountries);
 
 export default authRoutes;
