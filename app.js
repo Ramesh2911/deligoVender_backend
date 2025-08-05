@@ -8,6 +8,7 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import unitRoutes from './routes/unitRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 config({
     path: './config.env'
@@ -30,5 +31,6 @@ app.use('/api', categoryRoutes);
 app.use('/api', productRoutes);
 app.use('/api', unitRoutes);
 app.use('/api', dashboardRoutes);
+app.use('/api', orderRoutes);
 
 export default app;
