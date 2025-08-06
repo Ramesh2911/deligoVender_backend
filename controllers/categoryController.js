@@ -4,7 +4,7 @@ import con from '../db/db.js';
 export const mainCategories = async (req, res) => {
    try {
       const [rows] = await con.query(
-         `SELECT * FROM deligo.hr_category WHERE parent_id = 0 AND is_active = 1`
+         `SELECT category_name, category_image FROM hr_category WHERE parent_id = 0 AND is_active = 1`
       );
 
       if (rows.length === 0) {

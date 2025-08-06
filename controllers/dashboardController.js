@@ -26,9 +26,11 @@ export const vendorStats = async (req, res) => {
     `, [vendor_id]);
 
       const [todayAmount] = await con.query(`
-      SELECT IFNULL(SUM(total_amount), 0) as today_total
-      FROM hr_order
-      WHERE vendor_id = ? AND DATE(created_time) = CURDATE()
+     SELECT IFNULL(SUM(total_amount), 0) AS today_total
+FROM hr_order
+WHERE vendor_id = ?
+  AND created_time >= CURDATE()
+  AND created_time < CURDATE() + INTERVAL 1 DAY;
     `, [vendor_id]);
 
       const [monthAmount] = await con.query(`
