@@ -1,6 +1,5 @@
 import express from 'express';
-import { adminAuth } from '../middleware/auth.js';
-
+import { verifyToken } from '../middleware/auth.js';
 import {
    addProduct,
    updateProduct,
@@ -9,8 +8,8 @@ import {
    from '../controllers/productController.js';
 
 const productRoutes = express.Router();
-productRoutes.post('/addProduct', addProduct);
-productRoutes.put('/updateProduct/:pid', updateProduct);
-productRoutes.get('/products-by-vendor', getProductsByVendor);
+productRoutes.post('/addProduct', verifyToken, addProduct);
+productRoutes.put('/updateProduct/:pid', verifyToken, updateProduct);
+productRoutes.get('/products-by-vendor', verifyToken, getProductsByVendor);
 
 export default productRoutes;

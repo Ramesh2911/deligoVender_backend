@@ -4,9 +4,10 @@ import {
    subCategories
 }
    from '../controllers/categoryController.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const categoryRoutes = express.Router();
 categoryRoutes.get('/mainCategories', mainCategories);
-categoryRoutes.get('/subCategories', subCategories);
+categoryRoutes.get('/subCategories', verifyToken, subCategories);
 
 export default categoryRoutes;
