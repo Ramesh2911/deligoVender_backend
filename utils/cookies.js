@@ -25,6 +25,7 @@ export const adminCookie = (jwt_secret, user, res, message) => {
             status: true,
             message: message,
             user: {
+                prefix: user.prefix,
                 first_name: user.first_name,
                 last_name: user.last_name,
                 email: user.email,
@@ -35,6 +36,19 @@ export const adminCookie = (jwt_secret, user, res, message) => {
                 business_name: user.business_name,
                 address: user.address,
                 pincode: user.pincode,
+                company_name: user.company_name,
+                category_name: user.category_name,
+                country_name: user.country_name,
+                country_id: user.country_id,
+                nif: user.nif,
+                business_person: user.business_person,
+                contact_mail: user.contact_mail,
+                contact_mobile: user.contact_mobile,
+                bank_id: user.bank_id,
+                account_no: user.account_no,
+                latitude: user.latitude,
+                longitude: user.longitude,
+                rating: user.rating,
                 token: token,
                 token_expires_at: expiresAt.toISOString()
             }
