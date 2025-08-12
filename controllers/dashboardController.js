@@ -93,3 +93,64 @@ export const updateShopStatus = async (req, res) => {
       return res.status(500).json({ status: false, message: 'Server error' });
    }
 };
+
+//===== notification status update ======
+export const getOrders = async (req, res) => {
+   try {
+      const { vendor_id } = req.query;
+
+      if (!vendor_id) {
+         return res.status(400).json({
+            status: false,
+            message: 'vendor_id is required'
+         });
+      }
+
+      const [results] = await con.query(`
+            SELECT *
+            FROM hr_order
+            WHERE vendor_id = ?
+              AND status = 1
+              AND read_notification = 0
+        `, [vendor_id]);
+
+      res.status(200).json({
+         status: true,
+         data: results
+      });
+
+   } catch (error) {
+      console.error('Error fetching hr_order data:', error);
+      res.status(500).json({
+         status: false,
+         message: 'Internal Server Error'
+      });
+   }
+};
+
+//====== update notification======
+export const updateNotification = async (req, res) => {
+   try {
+      const { vendor_id } = req.body;
+      if (!vendor_id) {
+         return res.status(400).json({ status: false, message: 'vendor_id is required' });
+      }
+
+      const [result] = await con.query(
+         `UPDATE hr_order
+       SET read_notification = 1
+       WHERE vendor_id = ? AND status = 1 AND read_notification = 0`,
+         [vendor_id]
+      );
+
+      return res.json({
+         status: true,
+         message: 'All unread notifications marked as read',
+         affectedRows: result.affectedRows ?? 0
+      });
+   } catch (error) {
+      console.error('markOrdersRead error:', error);
+      return res.status(500).json({ status: false, message: 'Server error', error: error.message });
+   }
+};
+
