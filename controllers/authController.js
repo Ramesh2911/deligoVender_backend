@@ -154,7 +154,18 @@ export const login = async (req, res) => {
     }
 
     const [rows] = await con.query(
-      `SELECT * FROM hr_users WHERE email = ? AND role_id = 4 AND is_active = 'Y'`,
+      `SELECT
+      u.*,
+      c.category_name,
+      cn.name AS country_name
+   FROM hr_users u
+   LEFT JOIN hr_category c
+     ON u.business_type_id = c.cid
+   LEFT JOIN hr_countries cn
+     ON u.country_id = cn.id
+   WHERE u.email = ?
+     AND u.role_id = 4
+     AND u.is_active = 'Y'`,
       [email]
     );
 
