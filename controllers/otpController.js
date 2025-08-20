@@ -1,10 +1,10 @@
 import dotenv from 'dotenv';
 import twilio from 'twilio';
 import con from '../db/db.js';
+import axios from "axios";
 dotenv.config();
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
-
 
 //=======send OTP======
 export const sendOTP = async (req, res) => {
@@ -58,6 +58,91 @@ export const sendOTP = async (req, res) => {
    }
 };
 
+
+// export const sendOTP = async (req, res) => {
+//    let { phone, areacode, countryid, lang = "bn" } = req.body || {};
+
+//    if (!phone || !areacode || !countryid) {
+//       return res.status(400).json({
+//          status: false,
+//          message: "Phone number, country code, and country ID are required",
+//       });
+//    }
+
+//    try {
+//       // ✅ Ensure E.164 format
+//       if (!phone.startsWith("+")) {
+//          phone = `+${areacode}${phone}`;
+//       }
+//       if (!/^\+\d{8,15}$/.test(phone)) {
+//          return res.status(400).json({
+//             status: false,
+//             message: "Invalid phone number format. Use E.164 format.",
+//          });
+//       }
+
+//       // ✅ Check if phone already exists
+//       const [userRows] = await con.query(
+//          `SELECT * FROM hr_users WHERE mobile = ? AND country_id = ?`,
+//          [phone.replace(`+${areacode}`, ""), countryid]
+//       );
+//       if (userRows.length > 0) {
+//          return res.status(200).json({
+//             status: false,
+//             message:
+//                "Phone number already exists in the system. Please use a different phone number or proceed to login.",
+//          });
+//       }
+
+//       // ✅ Cooldown check
+//       const existing = otpStore.get(phone);
+//       if (
+//          existing &&
+//          existing.expiresAt - now() >
+//          OTP_EXPIRY_MIN * 60 * 1000 - 30 * 1000
+//       ) {
+//          return res.status(429).json({
+//             status: false,
+//             message: "Please wait before requesting another OTP.",
+//          });
+//       }
+
+//       // ✅ Generate OTP
+//       const otp = generateOTP();
+//       const expiresAt = now() + OTP_EXPIRY_MIN * 60 * 1000;
+
+//       // ✅ Language-based message
+//       const textBn = `আপনার OTP হলো ${otp}. ${OTP_EXPIRY_MIN} মিনিটের মধ্যে ব্যবহার করুন।`;
+//       const textEn = `Your OTP is ${otp}. Valid for ${OTP_EXPIRY_MIN} minutes.`;
+//       const text = lang === "bn" ? textBn : textEn;
+//       const type = lang === "bn" ? 1 : 0;
+
+//       // ✅ Send via SMS gateway
+//       const gatewayResponse = await sendSms({ to: phone, text, type });
+
+//       // ✅ Save in DB
+//       await con.query(
+//          `INSERT INTO hr_otp (user_id, country_id, mobile, otp) VALUES (0, ?, ?, ?)`,
+//          [countryid, phone.replace(`+${areacode}`, ""), otp]
+//       );
+
+//       // ✅ Save in memory
+//       otpStore.set(phone, { otp, expiresAt, attempts: 0 });
+
+//       return res.status(200).json({
+//          status: true,
+//          message: "OTP sent successfully",
+//          gatewayResponse,
+//       });
+//    } catch (error) {
+//       console.error(error?.response?.data || error.message);
+//       return res.status(500).json({
+//          status: false,
+//          message: "Failed to send and store OTP",
+//          detail: error?.response?.data || error.message,
+//       });
+//    }
+// };
 //=====verify OTP=====
 export const verifyOTP = async (req, res) => {
    const { phone, otp, countryid } = req.body;
