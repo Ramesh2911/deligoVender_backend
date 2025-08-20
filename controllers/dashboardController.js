@@ -68,19 +68,19 @@ WHERE vendor_id = ?
 //===== shop Status====
 export const updateShopStatus = async (req, res) => {
    const { id } = req.query;
-   const { is_shop_open } = req.body;
+   const { is_online } = req.body;
 
-   if (!id || is_shop_open === undefined) {
+   if (!id || is_online === undefined) {
       return res.status(400).json({
          status: false,
-         message: 'Missing id or is_shop_open',
+         message: 'Missing id or is_online',
       });
    }
 
    try {
       const [result] = await con.query(
-         'UPDATE hr_users SET is_shop_open = ? WHERE id = ?',
-         [is_shop_open, id]
+         'UPDATE hr_users SET is_online = ? WHERE id = ?',
+         [is_online, id]
       );
 
       if (result.affectedRows === 0) {
@@ -153,3 +153,4 @@ export const updateNotification = async (req, res) => {
       return res.status(500).json({ status: false, message: 'Server error', error: error.message });
    }
 };
+
