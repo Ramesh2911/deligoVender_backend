@@ -21,12 +21,11 @@ const upload = multer();
 authRoutes.post('/createuseraccount', upload.none(), createAcount);
 authRoutes.put('/useraccountupdate', upload.none(), updateUserAccount);
 authRoutes.post('/login', login);
-authRoutes.post('/logout',verifyToken, logout);
+authRoutes.post('/logout', verifyToken, logout);
 authRoutes.post('/reset-password-otp', sendResetOtp);
 authRoutes.post('/resend-reset-otp', resendResetOtp);
 authRoutes.post('/verify-reset-otp', verifyResetOtp);
 authRoutes.post('/reset-password', resetPassword);
 authRoutes.get('/country-list', getCountries);
-
 
 export default authRoutes;
