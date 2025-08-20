@@ -207,15 +207,15 @@ export const updateOrderStatus = async (req, res) => {
                     + SIN(RADIANS(o.latitude))
                     * SIN(RADIANS(u.latitude))
                 )) AS venor_rider_distance_km
-            FROM hr_users u
-            JOIN hr_order o
+            FROM deligo.hr_users u
+            JOIN deligo.hr_order o
                 ON o.oid = ?
-            JOIN hr_users v
+            JOIN deligo.hr_users v
                 ON v.id = o.vendor_id
             WHERE u.role_id = 6
               AND u.id NOT IN (
                   SELECT delivery_id
-                  FROM hr_order
+                  FROM deligo.hr_order
                   WHERE delivery_id > 0
                     AND status < 5
               )
@@ -225,9 +225,19 @@ export const updateOrderStatus = async (req, res) => {
             [order_id]
          );
 
+         // ✅ Insert the results into hr_delivery_boy
+         for (const row of nearestDeliveryBoys) {
+            await con.query(
+               `INSERT INTO hr_delivery_boy
+                  (orderid, userid, delivery_to_vendor, vendor_to_customer, create_time)
+                VALUES (?, ?, ?, ?, NOW())`,
+               [row.oid, row.delivery_id, row.venor_rider_distance_km, row.venor_customer_distance_km]
+            );
+         }
+
          return res.status(200).json({
             status: true,
-            message: "Order item updated successfully",
+            message: "Order item updated successfully & delivery boys assigned",
             nearestDeliveryBoys
          });
       }
@@ -368,3 +378,4 @@ export const itemUpdateStatus = async (req, res) => {
       });
    }
 };
+
