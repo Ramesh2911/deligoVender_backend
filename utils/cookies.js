@@ -32,7 +32,7 @@ export const adminCookie = (jwt_secret, user, res, message) => {
                 mobile: user.mobile,
                 id: user.id,
                 business_type_id: user.business_type_id,
-                is_shop_open: user.is_shop_open,
+                is_online : user.is_online ,
                 business_name: user.business_name,
                 address: user.address,
                 pincode: user.pincode,
