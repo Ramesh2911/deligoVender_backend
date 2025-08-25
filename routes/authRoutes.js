@@ -8,7 +8,9 @@ import {
    sendResetOtp,
    resendResetOtp,
    verifyResetOtp,
-   resetPassword
+   resetPassword,
+   forgotPasswordPhone,
+   updatePassword
 }
    from '../controllers/authController.js';
 import multer from 'multer';
@@ -25,7 +27,9 @@ authRoutes.post('/logout', verifyToken, logout);
 authRoutes.post('/reset-password-otp', sendResetOtp);
 authRoutes.post('/resend-reset-otp', resendResetOtp);
 authRoutes.post('/verify-reset-otp', verifyResetOtp);
-authRoutes.post('/reset-password', resetPassword);
+authRoutes.put('/reset-password', resetPassword);
 authRoutes.get('/country-list', getCountries);
+authRoutes.post('/forgot-password-phone', forgotPasswordPhone);
+authRoutes.put("/update-password", updatePassword);
 
 export default authRoutes;
