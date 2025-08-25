@@ -254,12 +254,16 @@ export const sendResetOtp = async (req, res) => {
 
     if (email) {
       const transporter = nodemailer.createTransport({
-        host: process.env.MAILER_HOST.replace(/'/g, ''),
-        port: process.env.MAILER_PORT.replace(/'/g, ''),
-        secure: false,
+        host: process.env.MAILER_HOST,   // ✅ no replace needed
+        port: Number(process.env.MAILER_PORT), // ✅ cast to number
+        secure: false, // must be false for port 587
         auth: {
           user: process.env.MAILER_USER,
           pass: process.env.MAILER_PASSWORD,
+        },
+        tls: {
+          ciphers: 'SSLv3',
+          rejectUnauthorized: false, // avoid self-signed cert issues
         },
       });
 
@@ -285,7 +289,7 @@ export const sendResetOtp = async (req, res) => {
         to: phone.startsWith('+') ? phone : `+91${phone}`,
       });
 
-      // You can similarly insert into a phone OTP table if needed
+      // Optional: Insert into phone OTP table here
     }
 
     return res.status(200).json({
@@ -294,7 +298,7 @@ export const sendResetOtp = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
+    console.error('Error in sendResetOtp:', error);
     return res.status(500).json({ status: false, message: 'Internal server error' });
   }
 };
@@ -403,38 +407,44 @@ export const verifyResetOtp = async (req, res) => {
   }
 };
 
-//==== update password=====
+//==== update password email=====
 export const resetPassword = async (req, res) => {
-  const { email, phone, password } = req.body;
+  const { email, password } = req.body;
 
-  if (!password || (!email && !phone)) {
-    return res.status(400).json({ status: false, message: 'Email or phone and new password are required.' });
+  if (!email || !password) {
+    return res.status(400).json({
+      status: false,
+      message: "Email and new password are required."
+    });
   }
 
   try {
+    // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    let query = '';
-    let params = [];
-
-    if (email) {
-      query = 'UPDATE hr_users SET password = ? WHERE email = ?';
-      params = [hashedPassword, email];
-    } else if (phone) {
-      query = 'UPDATE hr_users SET password = ? WHERE phone = ?';
-      params = [hashedPassword, phone];
-    }
+    // Update query
+    const query = "UPDATE hr_users SET password = ? WHERE email = ?";
+    const params = [hashedPassword, email];
 
     const [result] = await con.query(query, params);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ status: false, message: 'User not found.' });
+      return res.status(404).json({
+        status: false,
+        message: "User not found."
+      });
     }
 
-    res.json({ status: true, message: 'Password reset successfully.' });
+    res.json({
+      status: true,
+      message: "Password reset successfully."
+    });
   } catch (error) {
-    console.error('Reset Password Error:', error);
-    res.status(500).json({ status: false, message: 'Server error.' });
+    console.error("Reset Password Error:", error);
+    res.status(500).json({
+      status: false,
+      message: "Server error."
+    });
   }
 };
 
@@ -456,5 +466,103 @@ export const getCountries = async (req, res) => {
       status: false,
       message: 'Server error while fetching active countries',
     });
+  }
+};
+
+//======= forgotPassword phone=====
+export const forgotPasswordPhone = async (req, res) => {
+  const { mobile, country_id } = req.body;
+
+  if (!mobile || !country_id) {
+    return res.status(400).json({ status: false, message: 'Phone number and country ID are required' });
+  }
+
+  try {
+    // Check if user exists with given phone number
+    const [users] = await con.query(
+      'SELECT * FROM hr_users WHERE mobile = ?',
+      [mobile]
+    );
+
+    if (users.length === 0) {
+      return res.status(404).json({ status: false, message: 'User not found with this phone number' });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Format phone number with +country_code
+    const [countries] = await con.query(
+      'SELECT phonecode FROM hr_countries WHERE id = ?',
+      [country_id]
+    );
+
+    if (countries.length === 0) {
+      return res.status(400).json({ status: false, message: 'Invalid country ID' });
+    }
+
+    const countryCode = countries[0].phonecode;
+    const formattedPhone = mobile.startsWith('+') ? mobile : `+${countryCode}${mobile}`;
+
+    // Send OTP via Twilio
+    await client.messages.create({
+      body: `Your OTP for password reset is: ${otp}`,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: formattedPhone,
+    });
+
+    // Save OTP in hr_otp table
+    await con.query(
+      'INSERT INTO hr_otp (country_id, mobile, otp, create_time) VALUES (?, ?, ?, NOW())',
+      [country_id, mobile, otp]
+    );
+
+    return res.status(200).json({
+      status: true,
+      message: 'OTP sent successfully',
+    });
+
+  } catch (error) {
+    console.error("Error in sendForgotPasswordOtp:", error);
+    return res.status(500).json({
+      status: false,
+      message: 'Internal server error',
+    });
+  }
+};
+
+//===== update password phone ===
+export const updatePassword = async (req, res) => {
+  try {
+    const { country_id, country_code, mobile, password } = req.body;
+
+    if (!country_id || !country_code || !mobile || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const [rows] = await con.query(
+      `SELECT id FROM hr_users WHERE country_id = ? AND country_code = ? AND mobile = ?`,
+      [country_id, country_code, mobile]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const [result] = await con.query(
+      `UPDATE hr_users SET password = ? WHERE id = ?`,
+      [hashedPassword, rows[0].id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: "Password not updated" });
+    }
+
+    return res.status(200).json({ message: "Password updated successfully" });
+  } catch (error) {
+    console.error("Error:", error);
+    return res.status(500).json({ message: "Server error", error });
   }
 };

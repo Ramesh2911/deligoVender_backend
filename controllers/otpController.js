@@ -1,7 +1,6 @@
 import dotenv from 'dotenv';
 import twilio from 'twilio';
 import con from '../db/db.js';
-import axios from "axios";
 dotenv.config();
 
 const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
@@ -57,7 +56,6 @@ export const sendOTP = async (req, res) => {
       });
    }
 };
-
 
 // export const sendOTP = async (req, res) => {
 //    let { phone, areacode, countryid, lang = "bn" } = req.body || {};
