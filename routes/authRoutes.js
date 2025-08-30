@@ -10,7 +10,8 @@ import {
    verifyResetOtp,
    resetPassword,
    forgotPasswordPhone,
-   updatePassword
+   updatePassword,
+   changePassword
 }
    from '../controllers/authController.js';
 import multer from 'multer';
@@ -31,5 +32,6 @@ authRoutes.put('/reset-password', resetPassword);
 authRoutes.get('/country-list', getCountries);
 authRoutes.post('/forgot-password-phone', forgotPasswordPhone);
 authRoutes.put("/update-password", updatePassword);
+authRoutes.put("/change-password", verifyToken, changePassword);
 
 export default authRoutes;
