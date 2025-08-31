@@ -290,11 +290,73 @@ export const itemUpdateStatus = async (req, res) => {
             "UPDATE hr_order SET status = ? WHERE oid = ?",
             [orderStatus, order_id]
          );
+
+         // ✅ If order is ready for processing → assign nearest delivery boys
+         if (orderStatus === 2) {
+            const [nearestDeliveryBoys] = await con.query(
+               `
+               SELECT
+                   u.id AS delivery_id,
+                   u.latitude AS delivery_lat,
+                   u.longitude AS delivery_lng,
+                   o.oid,
+                   o.latitude AS customer_lat,
+                   o.longitude AS customer_lng,
+                   v.id AS vendor_id,
+                   v.latitude AS vendor_lat,
+                   v.longitude AS vendor_lng,
+                   (6371 * ACOS(
+                       COS(RADIANS(o.latitude))
+                       * COS(RADIANS(v.latitude))
+                       * COS(RADIANS(v.longitude) - RADIANS(o.longitude))
+                       + SIN(RADIANS(o.latitude))
+                       * SIN(RADIANS(v.latitude))
+                   )) AS venor_customer_distance_km,
+                   (6371 * ACOS(
+                       COS(RADIANS(o.latitude))
+                       * COS(RADIANS(u.latitude))
+                       * COS(RADIANS(u.longitude) - RADIANS(o.longitude))
+                       + SIN(RADIANS(o.latitude))
+                       * SIN(RADIANS(u.latitude))
+                   )) AS venor_rider_distance_km
+               FROM deligo.hr_users u
+               JOIN deligo.hr_order o
+                   ON o.oid = ?
+               JOIN deligo.hr_users v
+                   ON v.id = o.vendor_id
+               WHERE u.role_id = 6
+                 AND u.id NOT IN (
+                     SELECT delivery_id
+                     FROM deligo.hr_order
+                     WHERE delivery_id > 0
+                       AND status < 5
+                 )
+               ORDER BY venor_rider_distance_km ASC
+               LIMIT 5
+               `,
+               [order_id]
+            );
+
+            for (const row of nearestDeliveryBoys) {
+               await con.query(
+                  `INSERT INTO hr_delivery_boy
+                     (orderid, userid, delivery_to_vendor, vendor_to_customer, create_time)
+                   VALUES (?, ?, ?, ?, NOW())`,
+                  [row.oid, row.delivery_id, row.venor_rider_distance_km, row.venor_customer_distance_km]
+               );
+            }
+
+            return res.status(200).json({
+               status: true,
+               message: "Selected order items updated & delivery boys assigned",
+               nearestDeliveryBoys
+            });
+         }
       }
 
       return res.status(200).json({
          status: true,
-         message: "Selected order items updated successfully",
+         message: "Selected order items updated successfully"
       });
 
    } catch (error) {
@@ -305,3 +367,4 @@ export const itemUpdateStatus = async (req, res) => {
       });
    }
 };
+
